@@ -13,6 +13,14 @@ NoeRecursion <- function(alpha,beta,countdown=FALSE)
 	if (sum(alpha >= beta) > 0){
 		return(0)
 	}
+	if (sum(alpha < 0) > 0){
+		print("Note: Replaced components alpha[i] < 0 with 0!")
+		alpha <- pmax(alpha,0)
+	}
+	if (sum(beta > 1) > 0){
+		print("Note: Replaced components beta[i] > 1 with 1!")
+		beta <- pmin(beta,1)
+	}
 	n <- length(alpha)
 	logfact <- c(0,cumsum(log(1:n)))
 	gamma <- unique(sort(c(alpha,beta)))
