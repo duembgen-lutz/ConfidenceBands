@@ -1,3 +1,6 @@
+# An implementation of Noe's (1972) recursion.
+# Lutz Duembgen, May 4, 2022.
+
 # For numerical accuracy (dealing with products and sums
 # of very small positive numbers), our version of Noe's
 # recursion uses log-probabilities internally.
@@ -9,6 +12,15 @@ LogSum <- function(la,lb)
 }
 	
 NoeRecursion <- function(alpha,beta,countdown=FALSE)
+	# For two vectors alpha and beta of real numbers
+	#   alpha[1] <= alpha[2] <= ... <= alpha[n],
+	#    beta[1] <=  beta[2] <= ... <=  beta[n]
+	# such that alpha[i] < beta[i] for all i, this function
+	# computes the probability Q that the order statistics
+	#   U[1] < U[2] < ... < U[n]
+	# of n independent random variables with uniform distribution
+	# on [0,1] satisfy
+	#    alpha[i] < U[i] <= beta[i]  for i=1,2,...,n .
 {
 	if (sum(alpha >= beta) > 0){
 		return(0)
