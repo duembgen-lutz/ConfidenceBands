@@ -45,7 +45,7 @@ KS_Critval <- function(n, pv=c(0.5,0.9,0.95,0.99),digits=5,
 	np <- length(pv)
 	MK <- matrix(0,np,2)
 	MK[,2] <- Inf
-	dimnames(MK)[[1]] <- pv
+	dimnames(MK)[[1]] <- as.list(pv)
 	MP <- matrix(0,np,2)
 	MP[,2] <- 1
 	# MK[j,1] and MK[j,2] are a lower and an upper bound,
@@ -167,7 +167,7 @@ SP_Critval <- function(n, pv=c(0.5,0.9,0.95,0.99),gamma=1,
 	np <- length(pv)
 	MK <- matrix(0,np,2)
 	MK[,2] <- Inf
-	dimnames(MK)[[1]] <- pv
+	dimnames(MK)[[1]] <- as.list(pv)
 	MP <- matrix(0,np,2)
 	MP[,2] <- 1
 	# MK[j,1] and MK[j,2] are a lower and an upper bound,
@@ -292,7 +292,7 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 	np <- length(pv)
 	MK <- matrix(0,np,2)
 	MK[,2] <- Inf
-	dimnames(MK)[[1]] <- pv
+	dimnames(MK)[[1]] <- as.list(pv)
 	MP <- matrix(0,np,2)
 	MP[,2] <- 1
 	# MK[j,1] and MK[j,2] are a lower and an upper bound,
@@ -409,7 +409,7 @@ DW_Critval <- function(n, s=1, nu=1,
 	np <- length(pv)
 	MK <- matrix(0,np,2)
 	MK[,2] <- Inf
-	dimnames(MK)[[1]] <- pv
+	dimnames(MK)[[1]] <- as.list(pv)
 	MP <- matrix(0,np,2)
 	MP[,2] <- 1
 	# MK[j,1] and MK[j,2] are a lower and an upper bound,
