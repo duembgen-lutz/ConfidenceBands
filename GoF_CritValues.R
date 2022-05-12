@@ -84,9 +84,11 @@ KS_Critval <- function(n, pv=c(0.5,0.9,0.95,0.99),digits=5,
 			if (pdiff > 0){
 				lambda <- (pv[j] - MP[j,1])/pdiff
 				lambda <- (1/2 + 7*lambda)/8
-				k <- max(MK[j,1]+1,
-						 min(MK[j,2]-1,
-						 	floor((1-lambda)*MK[j,1] + lambda*MK[j,2])))
+				if (lambda >= 0.5){
+					k <- floor((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}else{
+					k <- ceiling((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
@@ -210,9 +212,11 @@ SP_Critval <- function(n, pv=c(0.5,0.9,0.95,0.99),gamma=1,
 			if (pdiff > 0){
 				lambda <- (pv[j] - MP[j,1])/pdiff
 				lambda <- (1/2 + 7*lambda)/8
-				k <- max(MK[j,1]+1,
-						 min(MK[j,2]-1,
-						 	floor((1-lambda)*MK[j,1] + lambda*MK[j,2])))
+				if (lambda >= 0.5){
+					k <- floor((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}else{
+					k <- ceiling((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
@@ -329,9 +333,11 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 			if (pdiff > 0){
 				lambda <- (pv[j] - MP[j,1])/pdiff
 				lambda <- (1/2 + 7*lambda)/8
-				k <- max(MK[j,1]+1,
-						 min(MK[j,2]-1,
-						 	floor((1-lambda)*MK[j,1] + lambda*MK[j,2])))
+				if (lambda >= 0.5){
+					k <- floor((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}else{
+					k <- ceiling((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
@@ -446,9 +452,11 @@ DW_Critval <- function(n, s=1, nu=1,
 			if (pdiff > 0){
 				lambda <- (pv[j] - MP[j,1])/pdiff
 				lambda <- (1/2 + 7*lambda)/8
-				k <- max(MK[j,1]+1,
-						 min(MK[j,2]-1,
-						 	floor((1-lambda)*MK[j,1] + lambda*MK[j,2])))
+				if (lambda >= 0.5){
+					k <- floor((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}else{
+					k <- ceiling((1-lambda)*MK[j,1] + lambda*MK[j,2])
+				}
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
