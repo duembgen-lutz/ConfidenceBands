@@ -1,162 +1,102 @@
 source("ConfBands.R")
 
-n <- 100
+# First illustrations for s = 1 ----
+
+par(cex=1.2,mai=c(0.5,0.5,0.05,0.05),mgp=c(2,1,0))
+
 n <- 250
 
-kappaKS <- 0.13403 # n=100
-kappaKS <- 0.08520 # n=250
+# Kolmogorov-Smirnov bands:
+
+# Critical value (without factor sqrt(n)):
+kappaKS <- 0.08520  # n=250
+# Confidence band:
 ABKS <- KS_band(n,kappa=kappaKS)
 
-DisplayCBand(AB=ABKS)
-DisplayCBand(AB=ABKS,reference="g",
-			 main='KS band')
-DisplayCBand(AB=ABKS,reference="g",centered=TRUE,
-			 main='KS band (centered)')
+DisplayCBand(AB1=ABKS)
+DisplayCBand(AB1=ABKS,reference="g")
+DisplayCBand(AB1=ABKS,reference="g",centered=TRUE)
 
-kappaSP <- 4.76746 # n=100
-kappaSP <- 4.75708 # n=250
+# Stepanova-Pavleko (2018) bands:
 
-ABSP <- SP_band(n,kappa=kappaSP)
+gamma_a <- 1
+kappaSP_a <- 4.75708 # n=250,  gamma=1
+ABSP_a <- SP_band(n,kappa=kappaSP_a,gamma=gamma_a)
 
-DisplayCBand(AB=ABSP)
-DisplayCBand(AB=ABSP,reference="g",
-			 main='SP band')
-DisplayCBand(AB=ABSP,reference="g",centered=TRUE,
-			 main='SP band (centered)')
-DisplayCBand(AB=ABSP,AB3=ABKS,reference="g",centered=TRUE,
-			 main='SP (black) and KS (red) bands (centered)')
+# Modified version:
+gamma_b <- 1.4579
+kappaSP_b <- 4.06479 # n=250,  gamma=1.4579
+ABSP_b <- SP_band(n,kappa=kappaSP_b,gamma=gamma_b)
 
+DisplayCBand(AB1=ABSP_a)
+DisplayCBand(AB1=ABSP_a,reference="g")
+DisplayCBand(AB1=ABSP_a,reference="g",centered=TRUE)
+DisplayCBand(AB1=ABSP_a,AB2=ABSP_b,AB3=ABKS,reference="g",
+			 centered=TRUE)
 
-kappaBJ <- 5.37660 # n=100
-kappaBJ <- 5.56533 # n=250,s=1.0
+# Berk-Jones-Owen bands:
 
+kappaBJ <- 5.56533 # n=250, s=1.0
 ABBJ <- BJ_band(n,s=1,kappa=kappaBJ)
 
-DisplayCBand(AB=ABBJ)
-DisplayCBand(AB=ABBJ,reference="g",
-			 main='BJO band')
-DisplayCBand(AB=ABBJ,reference="g",
-			 AB2=ABSP,AB3=ABKS,
-			 main='BJO (black), SP (blue) and KS (red) bands')
-DisplayCBand(AB=ABBJ,reference="g",centered=TRUE,
-			 main='BJO band (centered)')
-DisplayCBand(AB=ABBJ,reference="g",centered=TRUE,
-			 AB2=ABSP,AB3=ABKS,
-			 main='BJO (black), SP (blue) and KS (red) bands (centered)')
+DisplayCBand(AB1=ABBJ)
+DisplayCBand(AB1=ABBJ,reference="g")
+DisplayCBand(AB1=ABBJ,AB2=ABSP_a,AB3=ABKS,reference="g")
+DisplayCBand(AB1=ABBJ,AB2=ABSP_a,AB3=ABKS,
+			 reference="g",centered=TRUE)
 
-kappaDW <- 4.62316 # n=100
-kappaDW <- 4.61583 # n=250
+# Duembgen-Wellner bands:
 
+kappaDW <- 4.61583 # n=250, s=1.0
 ABDW <- DW_band(n,s=1,kappa=kappaDW)
 
-DisplayCBand(AB=ABDW)
-DisplayCBand(AB=ABDW,reference="g",
-			 main='DW band')
-DisplayCBand(AB=ABDW,reference="g",
-			 AB2=ABBJ,
-			 AB3=ABSP,
-			 main='DW (black), BJO (blue) and SP (red) bands')
-DisplayCBand(AB=ABDW,reference="g",centered=TRUE,
-			 main='DW confidence band (centered)')
-DisplayCBand(AB=ABDW,reference="g",centered=TRUE,
-			 AB2=ABBJ,
-			 AB3=ABSP,
-			 main='DW (black), BJO (blue) and SP (red) confidence bands (centered)')
-
-# Impact of s:
-
-n <- 250
-kappaBJ05 <- 7.61203 # n=250,s=0.5
-kappaBJ10 <- 5.56533 # n=250,s=1.0
-kappaBJ15 <- 8.08549 # n=250,s=1.5
-ABBJ05 <- BJ_band(n,s=0.5,kappa=kappaBJ05)
-ABBJ10 <- BJ_band(n,s=1.0,kappa=kappaBJ10)
-ABBJ15 <- BJ_band(n,s=1.5,kappa=kappaBJ15)
-DisplayCBand(AB=ABBJ10,reference="g",
-			 AB2=ABBJ05,
-			 AB3=ABBJ15,
-			 main='BJO bands for s = 0.5 (blue), 1.0 (black), 1.5 (red)')
-DisplayCBand(AB=ABBJ10,reference="g",centered=TRUE,
-			 AB2=ABBJ05,
-			 AB3=ABBJ15,
-			 main='Centered BJO bands for s = 0.5 (blue), 1.0 (black), 1.5 (red)')
-
-which(ABBJ05[,1] > ABBJ10[,1])
-which(ABBJ15[,1] > ABBJ10[,1])
+DisplayCBand(AB1=ABDW)
+DisplayCBand(AB1=ABDW,reference="g")
+DisplayCBand(AB1=ABDW,AB2=ABSP_a,
+			 colbg=c('black','green'),
+			 lwdbg=c(2,2),
+			 colfg=c('black','black'),
+			 lwdfg=c(2,2),
+			 reference="g",
+			 xlab='',ylab='')
+DisplayCBand(AB1=ABDW,reference="g",centered=TRUE)
+DisplayCBand2(AB1=ABDW,AB2=ABSP_a,AB3=ABKS,
+			  colbg=c('black','green','orange'),
+			  lwdbg=c(2,2,2),
+			  colfg=c('black','black','darkgray'),
+			  lwdfg=c(2,2,2),
+			  reference="g",differences=FALSE,
+			  xlab='',ylab='',main='')
+legend("topright",c('KS','DW','BJO'),
+	   lwd=c(2,2,2),
+	   col=c("orange","black","green"))
+DisplayCBand2(AB1=ABDW,AB2=ABBJ,AB3=ABKS,
+			  colbg=c('black','green','orange'),
+			  lwdbg=c(1,1,1),
+			  lwdfg=c(2,2,2),
+			  reference="g",differences=TRUE,
+			  xlab='',ylab='')
 
 
-n <- 250
-kappaDW05 <- 5.82036 # n=250,s=0.5
-kappaDW10 <- 4.61583 # n=250,s=1.0
-kappaDW15 <- 6.18853 # n=250,s=1.5
+# Impact of s ----
 
 n <- 500
-kappaDW05 <- 5.67719 # n=500,s=0.5
+kappaDW06 <- 5.12003 # n=500,s=0.6
 kappaDW10 <- 4.61260 # n=500,s=1.0
-kappaDW15 <- 6.07882 # n=500,s=1.5
+kappaDW14 <- 5.48632 # n=500,s=1.4
 
-n <- 1000
-kappaDW05 <- 5.56261 # n=1000,s=0.5
-kappaDW10 <- 4.61152 # n=1000,s=1.0
-kappaDW15 <- 5.99012 # n=1000,s=1.5
-
-ABDW05 <- DW_band(n,s=0.5,kappa=kappaDW05)
+ABDW06 <- DW_band(n,s=0.6,kappa=kappaDW06)
 ABDW10 <- DW_band(n,s=1.0,kappa=kappaDW10)
-ABDW15 <- DW_band(n,s=1.5,kappa=kappaDW15)
-DisplayCBand(AB=ABDW10,reference="g",
-			 AB2=ABDW05,
-			 AB3=ABDW15,
-			 main='DW bands')
-legend("topleft",c('s=1.5','s=1.0','s=0.5'),
-	   lwd=c(1,2,1),
-	   col=c("red","black","blue"))
-DisplayCBand(AB=ABDW10,reference="g",centered=TRUE,
-			 AB2=ABDW05,
-			 AB3=ABDW15,
-			 main='Centered DW bands')
-legend("topleft",c('s=1.5','s=1.0','s=0.5'),
-	   lwd=c(1,2,1),
-	   col=c("red","black","blue"))
-
-which(ABDW05[,1] > ABDW10[,1])
-which(ABDW15[,1] > ABDW10[,1])
-
-
-# Data example ----
-
-X <- read.table("Galaxy-Dat.txt",header=FALSE)
-X <- sort(as.vector(X$V1))
-n <- length(X)
-n
-
-# Various 95%-confidence bands
-kappaKS <- 0.14779
-ABKS <- KS_band(n,kappa=kappaKS)
-kappaSP <- 4.76530
-ABSP <- SP_band(n,kappa=kappaSP)
-kappaBJ <- 5.33160 # s=1.0
-ABBJ <- BJ_band(n,s=1.0,kappaBJ)
-kappaDW <- 4.62493 # s=1.0
-ABDW <- DW_band(n,s=1.0,kappa=kappaDW)
-
-par(cex=1,mai=c(0.9,0.9,0.5,0.05))
-DisplayCBand(AB=ABKS,X=X,xlim=c(9,35),
-			 main='KS band')
-DisplayCBand(AB=ABSP,X=X,xlim=c(9,35),
-			 main='SP band')
-DisplayCBand(AB=ABBJ,X=X,xlim=c(9,35),
-			 main='BJO band')
-DisplayCBand(AB=ABDW,X=X,xlim=c(9,35),
-			 main='DW band')
-
-# Comparisons:
-DisplayCBand(AB=ABDW,X=X,xlim=c(9,35),
-			 AB2=ABSP,AB3=ABKS,
-			 centered=TRUE,
-			 main='DW (black), SP (blue) and KS (red) bands centered')
-DisplayCBand(AB=ABDW,X=X,xlim=c(9,35),
-			 AB2=ABBJ,AB3=ABKS,
-			 centered=TRUE,
-			 main='DW (black), BJO (blue) and KS (red) bands centered')
-
-
+ABDW14 <- DW_band(n,s=1.4,kappa=kappaDW14)
+DisplayCBand2(AB1=ABDW10,AB2=ABDW14,AB3=ABDW06,
+			  colbg=c('black','yellow','orange'),
+			  lwdbg=c(1,1,1),
+			  lwdfg=c(2,2,2),
+			  reference="g",differences=FALSE,
+			  xlab='',ylab='',main='')
+DisplayCBand2(AB1=ABDW10,AB2=ABDW14,AB3=ABDW06,
+			  colbg=c('black','yellow','orange'),
+			  lwdbg=c(1,1,1),
+			  lwdfg=c(2,2,2),
+			  reference="g",differences=TRUE,
+			  xlab='',ylab='',main='')

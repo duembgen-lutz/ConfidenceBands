@@ -265,7 +265,7 @@ SP_TestCritval <- function(n,kappav,pv=c(0.5,0.9,0.95,0.99),
 
 # Berk-Jones tests ----
 
-BJ_CDF <- function(n, s=1, kappav)
+BJ_CDF <- function(n,s=1,kappav,restr.sup=(s<=0))
 	# Computes the distribution function of the
 	# Berk-Jones test statistic at the points specified
 	# by kappav. The test statistic is given by
@@ -277,21 +277,27 @@ BJ_CDF <- function(n, s=1, kappav)
 	nk <- length(kappav)
 	CDF <- rep(1,nk)
 	for (j in 1:nk){
-		AB <- BJ_band(n,s,kappav[j])
+		AB <- BJ_band(n,s,kappav[j],
+					  restr.sup=restr.sup)
 		CDF[j] <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 	}
 	return(CDF)
 }
 
-BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
+BJ_Critval <- function(n,s=1,
+					   pv=c(0.5,0.9,0.95,0.99),
 					   digits=5,
-					   kappa0=NULL)
+					   kappa0=NULL,
+					   restr.sup=(s<=0))
 	# Computes the (1 - alpha)-quantile of the
-	# Berk-Jones test statistic
-	#    sup_{t in (0,1)} n K_s(Ghat(t),t) ,
-	# where Ghat is the empricial distribution function
-	# of n independent random variables with uniform
-	# distribution on [0,1].
+	# Berk-Jones test statistic T_n^{BJ}. The latter
+	# is
+	#    sup_{t in [min(xi),max(xi))} n K_s(Ghat(t),t)
+	# if restr.sup == TRUE, and
+	#    sup_{t in (0,1)} n K_s(Ghat(t),t)
+	# otherwise. Here, Ghat is the empricial distribution
+	# function a vector xi of n independent random variables
+	# with uniform distribution on [0,1].
 {
 	np <- length(pv)
 	MK <- matrix(0,np,2)
@@ -308,7 +314,8 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 	}else{
 		k <- ceiling(10^digits*qchisq(pv[1],1)/2)
 	}
-	AB <- BJ_band(n,s,10^(-digits)*k)
+	AB <- BJ_band(n,s,10^(-digits)*k,
+				  restr.sup=restr.sup)
 	q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 	tmp <- (pv > q)
 	MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -319,7 +326,8 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 	for (j in 1:np){
 		while (MK[j,2] == Inf){
 			k <- 2*k
-			AB <- BJ_band(n,s,10^(-digits)*k)
+			AB <- BJ_band(n,s,10^(-digits)*k,
+						  restr.sup=restr.sup)
 			q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 			tmp <- (pv > q)
 			MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -341,7 +349,8 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
-			AB <- BJ_band(n,s,10^(-digits)*k)
+			AB <- BJ_band(n,s,10^(-digits)*k,
+						  restr.sup=restr.sup)
 			q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 			tmp <- (pv > q)
 			MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -356,19 +365,30 @@ BJ_Critval <- function(n, s=1, pv=c(0.5,0.9,0.95,0.99),
 
 BJ_TestCritval <- function(n,s=1,kappav,
 						   pv=c(0.5,0.9,0.95,0.99),
-						   mcsim=10000)
+						   mcsim=10000,
+						   restr.sup=(s<=0))
 	# Test empirically whether given critical values
 	# kappav could be pv-quantiles of the
 	# Berk-Jones test statistic.
 {
-	u0 <- (0:(n-1))/n
-	u1 <- (1:n)/n
 	np <- length(pv)
 	H <- rep(0,np)
-	for (sim in 1:mcsim){
-		U <- sort(runif(n))
-		Ts <- n*max(max(KSUT(u0,U,s)),max(KSUT(u1,U,s)))
-		H <- H + (Ts <= kappav)
+	if (restr.sup){
+		u <- (1:(n-1))/n
+		for (sim in 1:mcsim){
+			U <- sort(runif(n))
+			Ts <- n*max(max(KSUT(u,U[1:(n-1)],s)),
+						max(KSUT(u,U[2:n],s)))
+			H <- H + (Ts <= kappav)
+		}
+	}else{
+		u0 <- (0:(n-1))/n
+		u1 <- (1:n)/n
+		for (sim in 1:mcsim){
+			U <- sort(runif(n))
+			Ts <- n*max(max(KSUT(u0,U,s)),max(KSUT(u1,U,s)))
+			H <- H + (Ts <= kappav)
+		}
 	}
 	Table <- cbind('kappa'=kappav,
 				   'p'=pv,
@@ -382,7 +402,7 @@ BJ_TestCritval <- function(n,s=1,kappav,
 
 # Duembgen-Wellner tests ----
 
-DW_CDF <- function(n, s=1, nu=1, kappav)
+DW_CDF <- function(n, s=1, nu=1, kappav, restr.sup=(s<=0))
 	# Computes the distribution function of the
 	# Duembgen-Wellner test statistic at the points specified
 	# by kappav. The test statistic is given by
@@ -395,7 +415,8 @@ DW_CDF <- function(n, s=1, nu=1, kappav)
 	nk <- length(kappav)
 	CDF <- rep(1,nk)
 	for (j in 1:nk){
-		AB <- DW_band(n,s,nu,kappav[j])
+		AB <- DW_band(n,s,nu,kappav[j],
+					  restr.sup=restr.sup)
 		CDF[j] <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 	}
 	return(CDF)
@@ -404,13 +425,19 @@ DW_CDF <- function(n, s=1, nu=1, kappav)
 DW_Critval <- function(n, s=1, nu=1,
 					   pv=c(0.5,0.9,0.95,0.99),
 					   digits=5,
-					   kappa0=NULL)
+					   kappa0=NULL,
+					   restr.sup=(s<=0))
 	# Computes the (1 - alpha)-quantile of the
-	# Berk-Jones test statistic
-	#    sup_{t in (0,1)} n K_s(Ghat(t),t) ,
-	# where Ghat is the empricial distribution function
-	# of n independent random variables with uniform
-	# distribution on [0,1].
+	# Duembgen-Wellner test statistic T_{n,s,nu}. The
+	# latter is
+	#    sup_{t in [min(xi),max(xi))}
+	#      [n K_s(Ghat(t),t) - C_nu(Ghat(t),t)]
+	# if restr.sup==TRUE, and
+	#    sup_{t in [min(xi),max(xi))}
+	#      [n K_s(Ghat(t),t) - C_nu(Ghat(t),t)]
+	# otherwise. Here Ghat is the empricial distribution
+	# function of a vector xi of n independent random variables
+	# with uniform distribution on [0,1].
 {
 	np <- length(pv)
 	MK <- matrix(0,np,2)
@@ -427,7 +454,8 @@ DW_Critval <- function(n, s=1, nu=1,
 	}else{
 		k <- ceiling(10^digits*qchisq(pv[1],1)/2)
 	}
-	AB <- DW_band(n,s,nu,10^(-digits)*k)
+	AB <- DW_band(n,s,nu,10^(-digits)*k,
+				  restr.sup=restr.sup)
 	q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 	tmp <- (pv > q)
 	MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -438,7 +466,8 @@ DW_Critval <- function(n, s=1, nu=1,
 	for (j in 1:np){
 		while (MK[j,2] == Inf){
 			k <- 2*k
-			AB <- DW_band(n,s,nu,10^(-digits)*k)
+			AB <- DW_band(n,s,nu,10^(-digits)*k,
+						  restr.sup=restr.sup)
 			q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 			tmp <- (pv > q)
 			MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -460,7 +489,8 @@ DW_Critval <- function(n, s=1, nu=1,
 			}else{
 				k <- floor((MK[j,1] + MK[j,2])/2)
 			}
-			AB <- DW_band(n,s,nu,10^(-digits)*k)
+			AB <- DW_band(n,s,nu,10^(-digits)*k,
+						  restr.sup=restr.sup)
 			q <- NoeRecursion(AB[2:(n+1),1],AB[1:n,2])
 			tmp <- (pv > q)
 			MK[tmp,1] <- pmax(MK[tmp,1],k)
@@ -473,22 +503,36 @@ DW_Critval <- function(n, s=1, nu=1,
 	return(10^(-digits)*MK[,2])
 }
 
-DW_TestCritval <- function(n,s=1,nu=1,kappav,
+DW_TestCritval <- function(n,s=1,nu=1,
+						   kappav,
 						   pv=c(0.5,0.9,0.95,0.99),
-						   mcsim=10000)
+						   mcsim=10000,
+						   restr.sup=(s<=0))
 	# Test empirically whether given critical values
 	# kappav could be the pv-quantiles of the
 	# Duembgen-Wellner test statistic.
 {
-	u0 <- (0:(n-1))/n
-	u1 <- (1:n)/n
 	np <- length(pv)
 	H <- rep(0,np)
-	for (sim in 1:mcsim){
-		U <- sort(runif(n))
-		Ts <- max(max(n*KSUT(u0,U,s) - CNuUT(u0,U,nu)),
-				  max(n*KSUT(u1,U,s) - CNuUT(u1,U,nu)))
-		H <- H + (Ts <= kappav)
+	if (restr.sup){
+		u <- (1:(n-1))/n
+		for (sim in 1:mcsim){
+			U <- sort(runif(n))
+			Ts <- max(max(n*KSUT(u,U[1:(n-1)],s) -
+						  	CNuUT(u,U[1:(n-1)],nu)),
+					  max(n*KSUT(u,U[2:n],s) -
+					  		CNuUT(u,U[2:n],nu)))
+			H <- H + (Ts <= kappav)
+		}
+	}else{
+		u0 <- (0:(n-1))/n
+		u1 <- (1:n)/n
+		for (sim in 1:mcsim){
+			U <- sort(runif(n))
+			Ts <- max(max(n*KSUT(u0,U,s) - CNuUT(u0,U,nu)),
+					  max(n*KSUT(u1,U,s) - CNuUT(u1,U,nu)))
+			H <- H + (Ts <= kappav)
+		}
 	}
 	Table <- cbind('kappa'=kappav,
 				   'p'=pv,
@@ -545,48 +589,77 @@ CNuUT <- function(u,t,nu=1)
 	return(C)
 }
 
-BJ_band <- function(n,s=1,kappa,prec=10^(-7))
-	# For a given parameter s in (0,2] and given
+BJ_band <- function(n,s=1,kappa,prec=10^(-7),restr.sup=(s<=0))
+	# For a given parameter s in [-1,2] and given
 	# critical value kappa, this procedure computes
 	# (approximately) the coefficients of the BJ-confidence
 	# band resulting from the statistic
-	#    T_s(F) := sup_{x in R} n K_s(Fhat(x), F(x)).
-	# The inequality T_s(F) <= kappa is equivalent to
+	#    T_s(F) := sup_{x in [min(X),max(X))}
+	#                 n K_s(Fhat(x), F(x))
+	# if restr.sup==TRUE, and
+	#    T_s(F) := sup_{x in R}
+	#                 n K_s(Fhat(x), F(x))
+	# otherwise. The inequality T_s(F) <= kappa is equivalent to
 	#    AB[i+1,1] <= F(x) <= AB[i+1,2]
 	# for 0 <= i <= n and X_{n;i} <= x < X_{n:i+1}.
 	# In other words, the random vector U with components
 	#    U[i] = F(X_{n:i})
 	# satisfies
-#    a[i] <= U[i] <= b[i]  for 1 <= i <= n,
-# where a[i] := AB[i+1,1] and b[i] := AB[i,2].
+	#    a[i] <= U[i] <= b[i]  for 1 <= i <= n,
+	# where a[i] := AB[i+1,1] and b[i] := AB[i,2].
 {
-	if (s <= 0){
-		return("Sorry, the bands haven't been implemented for s <= 0.")
-	}
 	b <- rep(1,n+1)
-	for (j in (n-1):0){
-		b2 <- b[j+2]
-		K2 <- n*KSUT(j/n,b2,s)
-		b1 <- (j/n + b2)/2
-		K1 <- n*KSUT(j/n,b1,s)
-		while (K1 >= kappa){
-			b2 <- b1
-			K2 <- K1
+	if (restr.sup){
+		for (j in (n-1):1){
+			b2 <- b[j+2]
+			K2 <- n*KSUT(j/n,b2,s)
 			b1 <- (j/n + b2)/2
 			K1 <- n*KSUT(j/n,b1,s)
-		}
-		while (K2 >= kappa && b2 - b1 > prec/n){
-			bm <- (b1 + b2)/2
-			Km <- n*KSUT(j/n,bm,s)
-			if (Km < kappa){
-				b1 <- bm
-				K1 <- Km
-			}else{
-				b2 <- bm
-				K2 <- Km
+			while (K1 >= kappa){
+				b2 <- b1
+				K2 <- K1
+				b1 <- (j/n + b2)/2
+				K1 <- n*KSUT(j/n,b1,s)
 			}
+			while (K2 >= kappa && b2 - b1 > prec/n){
+				bm <- (b1 + b2)/2
+				Km <- n*KSUT(j/n,bm,s)
+				if (Km < kappa){
+					b1 <- bm
+					K1 <- Km
+				}else{
+					b2 <- bm
+					K2 <- Km
+				}
+			}
+			b[j+1] <- b2
 		}
-		b[j+1] <- b2
+		b[1] <- b[2]
+	}else{
+		for (j in (n-1):0){
+			b2 <- b[j+2]
+			K2 <- n*KSUT(j/n,b2,s)
+			b1 <- (j/n + b2)/2
+			K1 <- n*KSUT(j/n,b1,s)
+			while (K1 >= kappa){
+				b2 <- b1
+				K2 <- K1
+				b1 <- (j/n + b2)/2
+				K1 <- n*KSUT(j/n,b1,s)
+			}
+			while (K2 >= kappa && b2 - b1 > prec/n){
+				bm <- (b1 + b2)/2
+				Km <- n*KSUT(j/n,bm,s)
+				if (Km < kappa){
+					b1 <- bm
+					K1 <- Km
+				}else{
+					b2 <- bm
+					K2 <- Km
+				}
+			}
+			b[j+1] <- b2
+		}
 	}
 	a <- 1 - b[(n+1):1]
 	AB <- cbind('a'=a,'b'=b)
@@ -594,49 +667,78 @@ BJ_band <- function(n,s=1,kappa,prec=10^(-7))
 	return(AB)
 }
 
-DW_band <- function(n,s=1,nu=1,kappa,prec=10^(-7))
+DW_band <- function(n,s=1,nu=1,kappa,prec=10^(-7),restr.sup=(s<=0))
 	# For a given parameter s in (0,2] and given
 	# critical value kappa, this procedure computes
 	# (approximately) the coefficients of the DW-confidence
 	# band resulting from the statistic
+	#    T_{s,nu}(F) := sup_{x in [min(X),max(X))}
+	#       (n K_s(Fhat(x), F(x)) - C_nu(Fhat(x),F(x)))
+	# if restr.sup==TRUE, and
 	#    T_{s,nu}(F) := sup_{x in R}
-	#       (n K_s(Fhat(x), F(x)) - C_nu(Fhat(x),F(x))).
-	# The inequality T_{s,nu}(F) <= kappa is equivalent to
+	#       (n K_s(Fhat(x), F(x)) - C_nu(Fhat(x),F(x)))
+	# otherwise. The inequality T_{s,nu}(F) <= kappa is equivalent
+	# to
 	#    AB[i+1,1] <= F(x) <= AB[i+1,2]
 	# for 0 <= i <= n and X_{n;i} <= x < X_{n:i+1}.
 	# In other words, the random vector U with components
 	#    U[i] = F(X_{n:i})
-# satisfies
-#    a[i] <= U[i] <= b[i]  for 1 <= i <= n,
-# where a[i] := AB[i+1,1] and b[i] := AB[i,2].
+	# satisfies
+	#    a[i] <= U[i] <= b[i]  for 1 <= i <= n,
+	# where a[i] := AB[i+1,1] and b[i] := AB[i,2].
 {
-	if (s <= 0){
-		return("Sorry, the bands haven't been implemented for s <= 0.")
-	}
 	b <- rep(1,n+1)
-	for (j in (n-1):0){
-		b2 <- b[j+2]
-		K2 <- n*KSUT(j/n,b2,s) - CNuUT(j/n,b2,nu)
-		b1 <- (j/n + b2)/2
-		K1 <- n*KSUT(j/n,b1,s) - CNuUT(j/n,b1,nu)
-		while (K1 >= kappa){
-			b2 <- b1
-			K2 <- K1
+	if (restr.sup){
+		for (j in (n-1):1){
+			b2 <- b[j+2]
+			K2 <- n*KSUT(j/n,b2,s) - CNuUT(j/n,b2,nu)
 			b1 <- (j/n + b2)/2
 			K1 <- n*KSUT(j/n,b1,s) - CNuUT(j/n,b1,nu)
-		}
-		while (K2 >= kappa && b2 - b1 > prec/n){
-			bm <- (b1 + b2)/2
-			Km <- n*KSUT(j/n,bm,s) - CNuUT(j/n,bm,nu)
-			if (Km < kappa){
-				b1 <- bm
-				K1 <- Km
-			}else{
-				b2 <- bm
-				K2 <- Km
+			while (K1 >= kappa){
+				b2 <- b1
+				K2 <- K1
+				b1 <- (j/n + b2)/2
+				K1 <- n*KSUT(j/n,b1,s) - CNuUT(j/n,b1,nu)
 			}
+			while (K2 >= kappa && b2 - b1 > prec/n){
+				bm <- (b1 + b2)/2
+				Km <- n*KSUT(j/n,bm,s) - CNuUT(j/n,bm,nu)
+				if (Km < kappa){
+					b1 <- bm
+					K1 <- Km
+				}else{
+					b2 <- bm
+					K2 <- Km
+				}
+			}
+			b[j+1] <- b2
 		}
-		b[j+1] <- b2
+		b[1] <- b[2]
+	}else{
+		for (j in (n-1):0){
+			b2 <- b[j+2]
+			K2 <- n*KSUT(j/n,b2,s) - CNuUT(j/n,b2,nu)
+			b1 <- (j/n + b2)/2
+			K1 <- n*KSUT(j/n,b1,s) - CNuUT(j/n,b1,nu)
+			while (K1 >= kappa){
+				b2 <- b1
+				K2 <- K1
+				b1 <- (j/n + b2)/2
+				K1 <- n*KSUT(j/n,b1,s) - CNuUT(j/n,b1,nu)
+			}
+			while (K2 >= kappa && b2 - b1 > prec/n){
+				bm <- (b1 + b2)/2
+				Km <- n*KSUT(j/n,bm,s) - CNuUT(j/n,bm,nu)
+				if (Km < kappa){
+					b1 <- bm
+					K1 <- Km
+				}else{
+					b2 <- bm
+					K2 <- Km
+				}
+			}
+			b[j+1] <- b2
+		}
 	}
 	a <- 1 - b[(n+1):1]
 	AB <- cbind('a'=a,'b'=b)
