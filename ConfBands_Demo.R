@@ -81,6 +81,8 @@ DisplayCBand2(AB1=ABDW,AB2=ABBJ,AB3=ABKS,
 # Impact of s ----
 
 n <- 500
+n <- 2000
+
 kappaDW06 <- 5.12003 # n=500,s=0.6
 kappaDW10 <- 4.61260 # n=500,s=1.0
 kappaDW14 <- 5.48632 # n=500,s=1.4
@@ -100,3 +102,15 @@ DisplayCBand2(AB1=ABDW10,AB2=ABDW14,AB3=ABDW06,
 			  lwdfg=c(2,2,2),
 			  reference="g",differences=TRUE,
 			  xlab='',ylab='',main='')
+
+n <- 2000
+sv <- c(0.6,0.8,1.0,1.2,1.4)
+kappav <- c(5.00564,4.67497,4.61223,4.79777,5.38582)
+colv <- c('forestgreen','blue','black','red','orange')
+DisplayDWBandsS(n,sv[5:1],kappav[5:1],j0=3,
+				col=colv[5:1],reference="g",
+				xlab='',ylab='',main='')
+DisplayDWBandsS(n,sv[5:1],kappav[5:1],j0=3,
+				col=colv[5:1],reference="g",
+				differences=TRUE,
+				xlab='',ylab='',main='')
